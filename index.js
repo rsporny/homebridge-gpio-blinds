@@ -71,16 +71,16 @@ BlindsAccessory.prototype.getTargetPosition = function(callback) {
 BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
   this.log("Setting target position to %s", position);
 
-  if (this.currentPosition == position) {
-    this.log("Current position already matches target position. There is nothing to do.");
-    callback();
-    return true;
-  }
-
   if (this.positionState != STATE_STOPPED) {
     this.log("Blinds are moving. You need to wait. I will do nothing.");
     callback();
     return false;
+  }
+
+  if (this.currentPosition == position) {
+    this.log("Current position already matches target position. There is nothing to do.");
+    callback();
+    return true;
   }
 
   this.targetPosition = position;
