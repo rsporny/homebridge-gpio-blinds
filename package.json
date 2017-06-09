@@ -4,7 +4,12 @@
   "description": "Homebridge plugin to control blinds via Raspberry Pi GPIO pins",
   "license": "MIT",
   "keywords": [
-    "homebridge-plugin"
+    "homebridge-plugin",
+    "homebridge",
+    "raspberry",
+    "gpio",
+    "blinds",
+    "window-blinds"
   ],
   "repository": {
     "type": "git",
@@ -14,8 +19,8 @@
     "rpio": "^0.9.12"
   },
   "engines": {
-    "homebridge": ">=0.2.0",
-    "node": ">=0.12.0"
+    "homebridge": ">=0.4.6",
+    "node": ">=6.6.0"
   },
   "maintainers": [
     {
