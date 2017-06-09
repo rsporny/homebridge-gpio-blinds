@@ -2,7 +2,7 @@
 Homebridge plugin to control blinds via Raspberry Pi GPIO pins.
 
 ## Motivation
-I've got 16 windows with blinds in my house. Controlling them manually would be simply annoying. This is how it works with this plugin.
+I've got 16 windows with blinds in my house. Controlling them manually would be simply annoying. See how it works -> https://youtu.be/jc-fZn0_fBA
 
 ## Installation
 1. install homebridge
@@ -42,4 +42,7 @@ Fields:
 - [Power supply](https://botland.com.pl/zasilacze-sieciowe-12-v/6707-zasilacz-impulsowy-12v-2a-z-przewodami.html) for relay module
 - Some [wires](https://botland.com.pl/przewody-polaczeniowe/1021-przewody-polaczeniowe-zensko-zenskie-20cm-40szt.html?search_query=KAB-01021&results=1)
 
-#### More info about [Homebridge](https://github.com/nfarina/homebridge).
+## Troubleshooting
+- check platform: [Homebridge](https://github.com/nfarina/homebridge)
+- check plugin dependency: [rpio](https://www.npmjs.com/package/rpio)
+- or create issue
