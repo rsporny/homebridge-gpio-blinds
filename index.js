@@ -36,8 +36,8 @@ function BlindsAccessory(log, config) {
   rpio.init({
     mapping: 'gpio'
   });
-  rpio.open(this.pinUp, rpio.OUTPUT, rpio.HIGH);
-  rpio.open(this.pinDown, rpio.OUTPUT, rpio.HIGH);
+  rpio.open(this.pinUp, rpio.OUTPUT, rpio.LOW);
+  rpio.open(this.pinDown, rpio.OUTPUT, rpio.LOW);
 
   this.service
     .getCharacteristic(Characteristic.CurrentPosition)
@@ -106,9 +106,9 @@ BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
 }
 
 BlindsAccessory.prototype.togglePin = function(pin, duration) {
-  rpio.write(pin, rpio.LOW);
+  rpio.write(pin, rpio.HIGH);
   setTimeout(function() {
-    rpio.write(pin, rpio.HIGH);
+    rpio.write(pin, rpio.LOW);
   }.bind(this), duration);
 }
 
