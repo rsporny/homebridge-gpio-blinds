@@ -13,7 +13,8 @@
       "pinUp": 5,
       "pinDown": 11,
       "durationUp": 13000,
-      "durationDown": 13000
+      "durationDown": 13000,
+      "activeLow": false
     },
     {
       "accessory": "Blinds",
@@ -21,7 +22,8 @@
       "pinUp": 4,
       "pinDown": 3,
       "durationUp": 27000,
-      "durationDown": 25000
+      "durationDown": 25000,
+      "activeLow": false
     }
   ]
 }

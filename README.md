@@ -21,7 +21,8 @@ Sample accessory:
     "pinUp": 5,
     "pinDown": 11,
     "durationUp": 13000,
-    "durationDown": 13000
+    "durationDown": 13000,
+    "activeLow": false
   }
 ]
 ```
@@ -34,6 +35,7 @@ Fields:
 - `pinDown` pin for moving down
 - `durationUp` milliseconds to open blinds completely
 - `durationDown` milliseconds to close blinds completely
+- `activeLow` set to false if your relay is activated by high state (default: *true*)
 
 ## Raspberry Pi setup
 - Raspberry Pi 3 (should work with all versions)
