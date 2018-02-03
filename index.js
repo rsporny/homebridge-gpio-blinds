@@ -1,5 +1,5 @@
-var _ = require("underscore");
-var rpio = require("rpio");
+var _ = require('underscore');
+var rpio = require('rpio');
 var Service, Characteristic;
 
 const STATE_DECREASING = 0;
@@ -10,7 +10,7 @@ module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
 
-  homebridge.registerAccessory("homebridge-gpio-blinds", "Blinds", BlindsAccessory);
+  homebridge.registerAccessory('homebridge-gpio-blinds', 'Blinds', BlindsAccessory);
 }
 
 function BlindsAccessory(log, config) {
@@ -18,8 +18,8 @@ function BlindsAccessory(log, config) {
 
   this.log = log;
   this.name = config['name'];
-  this.pinUp = config["pinUp"];
-  this.pinDown = config["pinDown"];
+  this.pinUp = config['pinUp'];
+  this.pinDown = config['pinDown'];
   this.durationUp = config['durationUp'];
   this.durationDown = config['durationDown'];
   this.initialState = config['activeLow'] ? rpio.HIGH : rpio.LOW;
@@ -33,9 +33,9 @@ function BlindsAccessory(log, config) {
 
   this.infoService = new Service.AccessoryInformation();
   this.infoService
-    .setCharacteristic(Characteristic.Manufacturer, "Radoslaw Sporny")
-    .setCharacteristic(Characteristic.Model, "RaspberryPi GPIO Blinds")
-    .setCharacteristic(Characteristic.SerialNumber, "Version 1.0.0");
+    .setCharacteristic(Characteristic.Manufacturer, 'Radoslaw Sporny')
+    .setCharacteristic(Characteristic.Model, 'RaspberryPi GPIO Blinds')
+    .setCharacteristic(Characteristic.SerialNumber, 'Version 1.0.0');
 
   // use gpio pin numbering
   rpio.init({
@@ -77,13 +77,13 @@ BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
   this.log("Setting target position to %s", position);
 
   if (this.positionState != STATE_STOPPED) {
-    this.log("Blinds are moving. You need to wait. I will do nothing.");
+    this.log('Blinds are moving. You need to wait. I will do nothing.');
     callback();
     return false;
   }
 
   if (this.currentPosition == position) {
-    this.log("Current position already matches target position. There is nothing to do.");
+    this.log('Current position already matches target position. There is nothing to do.');
     callback();
     return true;
   }
@@ -98,7 +98,7 @@ BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
   }
 
   this.log("Duration: %s ms", duration);
-  this.log(moveUp ? "Moving up" : "Moving down");
+  this.log(moveUp ? 'Moving up' : 'Moving down');
 
   this.service.setCharacteristic(Characteristic.PositionState, (moveUp ? STATE_INCREASING : STATE_DECREASING));
   this.positionState = (moveUp ? STATE_INCREASING : STATE_DECREASING);
