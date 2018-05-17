@@ -38,7 +38,7 @@ function BlindsAccessory(log, config) {
   this.infoService
     .setCharacteristic(Characteristic.Manufacturer, 'Radoslaw Sporny')
     .setCharacteristic(Characteristic.Model, 'RaspberryPi GPIO Blinds')
-    .setCharacteristic(Characteristic.SerialNumber, 'Version 1.0.1');
+    .setCharacteristic(Characteristic.SerialNumber, 'Version 1.1.0');
 
   // use gpio pin numbering
   rpio.init({
