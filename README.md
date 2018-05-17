@@ -22,6 +22,8 @@ Sample accessory:
     "pinDown": 11,
     "durationUp": 13000,
     "durationDown": 13000,
+    "pinClosed": 17,
+    "pinOpen": 18,
     "activeLow": false
   }
 ]
@@ -35,7 +37,10 @@ Fields:
 - `pinDown` pin for moving down
 - `durationUp` milliseconds to open blinds completely
 - `durationDown` milliseconds to close blinds completely
-- `activeLow` set to false if your relay is activated by high state (default: *true*)
+- `pinClosed` [optional] pin connected to reed switch which is active when blind is closed, see *reedActiveLow*
+- `pinOpen` [optional] pin connected to reed switch which is active when blind is open, see *reedActiveLow*
+- `activeLow` [optional, default: *true*] true: relay activated by low state (0), false: relay activated by high state (1), affects *pinUp*, *pinDown*
+- `reedSwitchActiveLow` [optional, default: *true*] true: reed switch activated by low state (0), false: reed switch activated by high state (1), affects *pinClosed*, *pinOpen*
 
 ## Raspberry Pi setup
 - Raspberry Pi 3 (should work with all versions)
