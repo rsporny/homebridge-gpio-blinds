@@ -24,7 +24,8 @@ Sample accessory:
     "durationDown": 13000,
     "pinClosed": 17,
     "pinOpen": 18,
-    "activeLow": false
+    "activeLow": false,
+    "reedSwitchActiveLow": false
   }
 ]
 ```

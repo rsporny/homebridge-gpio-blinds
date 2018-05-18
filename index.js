@@ -38,7 +38,13 @@ function BlindsAccessory(log, config) {
   this.infoService
     .setCharacteristic(Characteristic.Manufacturer, 'Radoslaw Sporny')
     .setCharacteristic(Characteristic.Model, 'RaspberryPi GPIO Blinds')
-    .setCharacteristic(Characteristic.SerialNumber, 'Version 1.1.0');
+    .setCharacteristic(Characteristic.SerialNumber, 'Version 1.1.1');
+
+  this.finalBlindsStateTimeout;
+  this.togglePinTimeout;
+  this.intervalUp = this.durationUp / 100;
+  this.intervalDown = this.durationDown / 100;
+  this.currentPositionInterval;
 
   // use gpio pin numbering
   rpio.init({
@@ -93,11 +99,19 @@ BlindsAccessory.prototype.getTargetPosition = function(callback) {
 
 BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
   this.log("Setting target position to %s", position);
+  this.targetPosition = position;
+  var moveUp = (this.targetPosition >= this.currentPosition);
+  var duration;
 
   if (this.positionState != STATE_STOPPED) {
-    this.log('Blinds are moving. You need to wait. I will do nothing.');
-    callback();
-    return false;
+    this.log("Blind is moving, current position %s", this.currentPosition);
+    if (this.oppositeDirection(moveUp)) {
+      this.log('Stopping the blind because of opposite direction');
+      rpio.write((moveUp ? this.pinDown : this.pinUp), this.initialState);
+    }
+    clearInterval(this.currentPositionInterval);
+    clearTimeout(this.finalBlindsStateTimeout);
+    clearTimeout(this.togglePinTimeout);
   }
 
   if (this.currentPosition == position) {
@@ -106,22 +120,20 @@ BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
     return true;
   }
 
-  this.targetPosition = position;
-  var moveUp = (this.targetPosition >= this.currentPosition);
-  var duration;
   if (moveUp) {
-    duration = (this.targetPosition - this.currentPosition) / 100 * this.durationUp;
+    duration = Math.round((this.targetPosition - this.currentPosition) / 100 * this.durationUp);
+    this.currentPositionInterval = setInterval(function(){ this.currentPosition++; }.bind(this), this.intervalUp);
   } else {
-    duration = (this.currentPosition - this.targetPosition) / 100 * this.durationDown;
+    duration = Math.round((this.currentPosition - this.targetPosition) / 100 * this.durationDown);
+    this.currentPositionInterval = setInterval(function(){ this.currentPosition--; }.bind(this), this.intervalDown);
   }
 
-  this.log("Duration: %s ms", duration);
-  this.log(moveUp ? 'Moving up' : 'Moving down');
+  this.log((moveUp ? 'Moving up' : 'Moving down') + ". Duration: %s ms.", duration);
 
   this.service.setCharacteristic(Characteristic.PositionState, (moveUp ? STATE_INCREASING : STATE_DECREASING));
   this.positionState = (moveUp ? STATE_INCREASING : STATE_DECREASING);
 
-  setTimeout(this.setFinalBlindsState.bind(this), duration);
+  this.finalBlindsStateTimeout = setTimeout(this.setFinalBlindsState.bind(this), duration);
   this.togglePin((moveUp ? this.pinUp : this.pinDown), duration);
 
   callback();
@@ -129,13 +141,14 @@ BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
 }
 
 BlindsAccessory.prototype.togglePin = function(pin, duration) {
-  rpio.write(pin, this.activeState);
-  setTimeout(function() {
+  if (rpio.read(pin) != this.activeState) rpio.write(pin, this.activeState);
+  this.togglePinTimeout = setTimeout(function() {
     rpio.write(pin, this.initialState);
   }.bind(this), duration);
 }
 
 BlindsAccessory.prototype.setFinalBlindsState = function() {
+  clearInterval(this.currentPositionInterval);
   this.positionState = STATE_STOPPED;
   this.service.setCharacteristic(Characteristic.PositionState, STATE_STOPPED);
   this.service.setCharacteristic(Characteristic.CurrentPosition, this.targetPosition);
@@ -154,6 +167,10 @@ BlindsAccessory.prototype.openAndOutOfSync = function() {
 BlindsAccessory.prototype.partiallyOpenAndOutOfSync = function() {
   return (this.currentPosition == 0 && this.pinClosed && (rpio.read(this.pinClosed) != this.reedSwitchActiveState)) ||
          (this.currentPosition == 100 && this.pinOpen && (rpio.read(this.pinOpen) != this.reedSwitchActiveState));
+}
+
+BlindsAccessory.prototype.oppositeDirection = function(moveUp) {
+  return (this.positionState == STATE_INCREASING && !moveUp) || (this.positionState == STATE_DECREASING && moveUp);
 }
 
 BlindsAccessory.prototype.getServices = function() {
