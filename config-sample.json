@@ -13,8 +13,7 @@
       "pinUp": 5,
       "pinDown": 11,
       "durationUp": 13000,
-      "durationDown": 13000,
-      "activeLow": false
+      "durationDown": 13000
     },
     {
       "accessory": "Blinds",
@@ -23,9 +22,10 @@
       "pinDown": 3,
       "durationUp": 27000,
       "durationDown": 25000,
-      "pinClosed":17,
-      "pinOpen":18,
-      "activeLow": false
+      "pinClosed": 17,
+      "pinOpen": 18,
+      "activeLow": false,
+      "reedSwitchActiveLow": false
     }
   ]
 }
