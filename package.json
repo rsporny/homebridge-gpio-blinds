@@ -1,6 +1,6 @@
 {
   "name": "homebridge-gpio-blinds",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Homebridge plugin to control blinds via Raspberry Pi GPIO pins",
   "license": "MIT",
   "keywords": [
