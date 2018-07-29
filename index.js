@@ -91,7 +91,10 @@ BlindsAccessory.prototype.getCurrentPosition = function(callback) {
 
 BlindsAccessory.prototype.getTargetPosition = function(callback) {
   var updatedPosition;
-  if (this.closedAndOutOfSync()) {
+  if (this.openCloseSensorMalfunction()) {
+    this.log("Open and close reed switches are active, setting to 50");
+    updatedPosition = 50;
+  } else if (this.closedAndOutOfSync()) {
     this.log("Current position is out of sync, setting to 0");
     updatedPosition = 0;
   } else if (this.openAndOutOfSync()) {
@@ -190,6 +193,12 @@ BlindsAccessory.prototype.openAndOutOfSync = function() {
 BlindsAccessory.prototype.partiallyOpenAndOutOfSync = function() {
   return (this.currentPosition == 0 && this.pinClosed && (rpio.read(this.pinClosed) != this.reedSwitchActiveState)) ||
          (this.currentPosition == 100 && this.pinOpen && (rpio.read(this.pinOpen) != this.reedSwitchActiveState));
+}
+
+BlindsAccessory.prototype.openCloseSensorMalfunction = function() {
+  return (this.pinClosed && this.pinOpen &&
+         (rpio.read(this.pinClosed) == this.reedSwitchActiveState) &&
+         (rpio.read(this.pinOpen) == this.reedSwitchActiveState));
 }
 
 BlindsAccessory.prototype.oppositeDirection = function(moveUp) {
