@@ -22,6 +22,7 @@ Sample accessory:
     "pinDown": 11,
     "durationUp": 13000,
     "durationDown": 13000,
+    "durationOffset": 1000,
     "pinClosed": 17,
     "pinOpen": 18,
     "activeLow": false,
@@ -38,6 +39,7 @@ Fields:
 - `pinDown` pin for moving down
 - `durationUp` milliseconds to open blinds completely
 - `durationDown` milliseconds to close blinds completely
+- `durationOffset` [optional, default: *0*] milliseconds added to durationUp and durationDown to make sure that blinds are completely open or closed
 - `pinClosed` [optional] pin connected to reed switch which is active when blind is closed, see *reedActiveLow*
 - `pinOpen` [optional] pin connected to reed switch which is active when blind is open, see *reedActiveLow*
 - `activeLow` [optional, default: *true*] true: relay activated by low state (0), false: relay activated by high state (1), affects *pinUp*, *pinDown*
