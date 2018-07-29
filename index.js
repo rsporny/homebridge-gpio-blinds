@@ -14,7 +14,7 @@ module.exports = function(homebridge) {
 }
 
 function BlindsAccessory(log, config) {
-  _.defaults(config, {activeLow: true, reedSwitchActiveLow: true});
+  _.defaults(config, {durationOffset: 0, activeLow: true, reedSwitchActiveLow: true});
 
   this.log = log;
   this.name = config['name'];
@@ -22,6 +22,7 @@ function BlindsAccessory(log, config) {
   this.pinDown = config['pinDown'];
   this.durationUp = config['durationUp'];
   this.durationDown = config['durationDown'];
+  this.durationOffset = config['durationOffset'];
   this.pinClosed = config['pinClosed'];
   this.pinOpen = config['pinOpen'];
   this.initialState = config['activeLow'] ? rpio.HIGH : rpio.LOW;
@@ -158,9 +159,10 @@ BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
 
 BlindsAccessory.prototype.togglePin = function(pin, duration) {
   if (rpio.read(pin) != this.activeState) rpio.write(pin, this.activeState);
+  if (this.durationOffset && (this.targetPosition == 0 || this.targetPosition == 100)) this.duration += this.durationOffset;
   this.togglePinTimeout = setTimeout(function() {
     rpio.write(pin, this.initialState);
-  }.bind(this), duration);
+  }.bind(this), parseInt(duration));
 }
 
 BlindsAccessory.prototype.setFinalBlindsState = function() {

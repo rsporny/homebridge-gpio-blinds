@@ -22,6 +22,7 @@
       "pinDown": 3,
       "durationUp": 27000,
       "durationDown": 25000,
+      "durationOffset": 1000,
       "pinClosed": 17,
       "pinOpen": 18,
       "activeLow": false,
