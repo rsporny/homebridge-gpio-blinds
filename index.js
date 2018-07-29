@@ -1,6 +1,6 @@
 var _ = require('underscore');
 var rpio = require('rpio');
-var Service, Characteristic;
+var Service, Characteristic, HomebridgeAPI;
 
 const STATE_DECREASING = 0;
 const STATE_INCREASING = 1;
@@ -9,7 +9,7 @@ const STATE_STOPPED = 2;
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-
+  HomebridgeAPI = homebridge;
   homebridge.registerAccessory('homebridge-gpio-blinds', 'Blinds', BlindsAccessory);
 }
 
@@ -28,8 +28,18 @@ function BlindsAccessory(log, config) {
   this.activeState = config['activeLow'] ? rpio.LOW : rpio.HIGH;
   this.reedSwitchActiveState = config['reedSwitchActiveLow'] ? rpio.LOW : rpio.HIGH;
 
-  this.currentPosition = 0; // down by default
-  this.targetPosition = 0; // down by default
+  this.cacheDirectory = HomebridgeAPI.user.persistPath();
+  this.storage = require('node-persist');
+  this.storage.initSync({dir:this.cacheDirectory, forgiveParseErrors: true});
+
+  var cachedCurrentPosition = this.storage.getItemSync(this.name);
+  if((cachedCurrentPosition === undefined) || (cachedCurrentPosition === false)) {
+		this.currentPosition = 0; // down by default
+	} else {
+		this.currentPosition = cachedCurrentPosition;
+	}
+
+  this.targetPosition = this.currentPosition;
   this.positionState = STATE_STOPPED; // stopped by default
 
   this.service = new Service.WindowCovering(this.name);
@@ -38,7 +48,7 @@ function BlindsAccessory(log, config) {
   this.infoService
     .setCharacteristic(Characteristic.Manufacturer, 'Radoslaw Sporny')
     .setCharacteristic(Characteristic.Model, 'RaspberryPi GPIO Blinds')
-    .setCharacteristic(Characteristic.SerialNumber, 'Version 1.1.1');
+    .setCharacteristic(Characteristic.SerialNumber, 'Version 1.1.2');
 
   this.finalBlindsStateTimeout;
   this.togglePinTimeout;
@@ -80,18 +90,21 @@ BlindsAccessory.prototype.getCurrentPosition = function(callback) {
 }
 
 BlindsAccessory.prototype.getTargetPosition = function(callback) {
+  var updatedPosition;
   if (this.closedAndOutOfSync()) {
     this.log("Current position is out of sync, setting to 0");
-    this.currentPosition = 0;
-    this.targetPosition = 0;
+    updatedPosition = 0;
   } else if (this.openAndOutOfSync()) {
     this.log("Current position is out of sync, setting to 100");
-    this.currentPosition = 100;
-    this.targetPosition = 100;
+    updatedPosition = 100;
   } else if (this.partiallyOpenAndOutOfSync()) {
     this.log("Current position is out of sync, setting to 50");
-    this.currentPosition = 50;
-    this.targetPosition = 50;
+    updatedPosition = 50;
+  }
+  if (updatedPosition !== undefined) {
+    this.currentPosition = updatedPosition;
+    this.targetPosition = updatedPosition;
+    this.storage.setItemSync(this.name, updatedPosition);
   }
   this.log("Target position: %s", this.targetPosition);
   callback(null, this.targetPosition);
@@ -122,10 +135,10 @@ BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
 
   if (moveUp) {
     duration = Math.round((this.targetPosition - this.currentPosition) / 100 * this.durationUp);
-    this.currentPositionInterval = setInterval(function(){ this.currentPosition++; }.bind(this), this.intervalUp);
+    this.currentPositionInterval = setInterval(this.setCurrentPosition.bind(this, moveUp), this.intervalUp);
   } else {
     duration = Math.round((this.currentPosition - this.targetPosition) / 100 * this.durationDown);
-    this.currentPositionInterval = setInterval(function(){ this.currentPosition--; }.bind(this), this.intervalDown);
+    this.currentPositionInterval = setInterval(this.setCurrentPosition.bind(this, moveUp), this.intervalDown);
   }
 
   this.log((moveUp ? 'Moving up' : 'Moving down') + ". Duration: %s ms.", duration);
@@ -153,7 +166,17 @@ BlindsAccessory.prototype.setFinalBlindsState = function() {
   this.service.setCharacteristic(Characteristic.PositionState, STATE_STOPPED);
   this.service.setCharacteristic(Characteristic.CurrentPosition, this.targetPosition);
   this.currentPosition = this.targetPosition;
+  this.storage.setItemSync(this.name, this.currentPosition);
   this.log("Successfully moved to target position: %s", this.targetPosition);
+}
+
+BlindsAccessory.prototype.setCurrentPosition = function(moveUp) {
+  if (moveUp) {
+    this.currentPosition++;
+  } else {
+    this.currentPosition--;
+  }
+  this.storage.setItemSync(this.name, this.currentPosition);
 }
 
 BlindsAccessory.prototype.closedAndOutOfSync = function() {

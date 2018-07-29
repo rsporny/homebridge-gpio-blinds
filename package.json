@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "rpio": "^0.9.12",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "node-persist": "^2.1.0"
   },
   "engines": {
     "homebridge": ">=0.4.6",
