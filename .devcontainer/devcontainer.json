@@ -1,0 +1,5 @@
+{
+    "name": "Node image",
+    "image": "node:14.11-buster",
+	"extensions": ["dbaeumer.vscode-eslint"]
+}
