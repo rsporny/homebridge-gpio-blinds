@@ -49,7 +49,7 @@ function BlindsAccessory(log, config) {
   this.infoService
     .setCharacteristic(Characteristic.Manufacturer, 'Radoslaw Sporny')
     .setCharacteristic(Characteristic.Model, 'RaspberryPi GPIO Blinds')
-    .setCharacteristic(Characteristic.SerialNumber, 'Version 1.1.2');
+    .setCharacteristic(Characteristic.SerialNumber, 'Version 1.1.4');
 
   this.finalBlindsStateTimeout;
   this.togglePinTimeout;
@@ -159,7 +159,7 @@ BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
 
 BlindsAccessory.prototype.togglePin = function(pin, duration) {
   if (rpio.read(pin) != this.activeState) rpio.write(pin, this.activeState);
-  if (this.durationOffset && (this.targetPosition == 0 || this.targetPosition == 100)) this.duration += this.durationOffset;
+  if (this.durationOffset && (this.targetPosition == 0 || this.targetPosition == 100)) duration += this.durationOffset;
   this.togglePinTimeout = setTimeout(function() {
     rpio.write(pin, this.initialState);
   }.bind(this), parseInt(duration));
