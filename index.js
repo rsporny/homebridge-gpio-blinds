@@ -49,7 +49,7 @@ function BlindsAccessory(log, config) {
   this.infoService
     .setCharacteristic(Characteristic.Manufacturer, 'Radoslaw Sporny')
     .setCharacteristic(Characteristic.Model, 'RaspberryPi GPIO Blinds')
-    .setCharacteristic(Characteristic.SerialNumber, 'Version 1.1.4');
+    .setCharacteristic(Characteristic.SerialNumber, 'Version 1.2.0');
 
   this.finalBlindsStateTimeout;
   this.togglePinTimeout;
@@ -116,20 +116,28 @@ BlindsAccessory.prototype.getTargetPosition = function(callback) {
 
 BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
   this.log("Setting target position to %s", position);
-  this.targetPosition = position;
-  var moveUp = (this.targetPosition >= this.currentPosition);
-  var duration;
 
+  // If blind is moving, stop it and do NOT set a new target position
   if (this.positionState != STATE_STOPPED) {
-    this.log("Blind is moving, current position %s", this.currentPosition);
-    if (this.oppositeDirection(moveUp)) {
-      this.log('Stopping the blind because of opposite direction');
-      rpio.write((moveUp ? this.pinDown : this.pinUp), this.initialState);
-    }
+    this.log("Blind is moving, stopping movement before accepting new target position.");
+    rpio.write(this.pinUp, this.initialState);
+    rpio.write(this.pinDown, this.initialState);
     clearInterval(this.currentPositionInterval);
     clearTimeout(this.finalBlindsStateTimeout);
     clearTimeout(this.togglePinTimeout);
+    this.targetPosition = this.currentPosition;
+    this.positionState = STATE_STOPPED;
+    this.service.setCharacteristic(Characteristic.PositionState, STATE_STOPPED);
+    this.service.setCharacteristic(Characteristic.CurrentPosition, this.currentPosition);
+    this.storage.setItemSync(this.name, this.currentPosition);
+    this.setTargetPosition(this.currentPosition, callback);
+    return true;
   }
+
+  // Only set new target position if blind is stopped
+  this.targetPosition = position;
+  var moveUp = (this.targetPosition >= this.currentPosition);
+  var duration;
 
   if (this.currentPosition == position) {
     this.log('Current position already matches target position. There is nothing to do.');
@@ -150,6 +158,7 @@ BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
   this.service.setCharacteristic(Characteristic.PositionState, (moveUp ? STATE_INCREASING : STATE_DECREASING));
   this.positionState = (moveUp ? STATE_INCREASING : STATE_DECREASING);
 
+  if (this.durationOffset && (this.targetPosition == 0 || this.targetPosition == 100)) duration += this.durationOffset;
   this.finalBlindsStateTimeout = setTimeout(this.setFinalBlindsState.bind(this), duration);
   this.togglePin((moveUp ? this.pinUp : this.pinDown), duration);
 
@@ -159,7 +168,6 @@ BlindsAccessory.prototype.setTargetPosition = function(position, callback) {
 
 BlindsAccessory.prototype.togglePin = function(pin, duration) {
   if (rpio.read(pin) != this.activeState) rpio.write(pin, this.activeState);
-  if (this.durationOffset && (this.targetPosition == 0 || this.targetPosition == 100)) duration += this.durationOffset;
   this.togglePinTimeout = setTimeout(function() {
     rpio.write(pin, this.initialState);
   }.bind(this), parseInt(duration));
@@ -177,9 +185,9 @@ BlindsAccessory.prototype.setFinalBlindsState = function() {
 
 BlindsAccessory.prototype.setCurrentPosition = function(moveUp) {
   if (moveUp) {
-    this.currentPosition++;
+    this.currentPosition = Math.min(100, this.currentPosition + 1);
   } else {
-    this.currentPosition--;
+    this.currentPosition = Math.max(0, this.currentPosition - 1);
   }
   this.storage.setItemSync(this.name, this.currentPosition);
 }
